@@ -1,16 +1,10 @@
 [DB]
-# Change to your real envision
-host: 192.168.1.100
+host: 192.168.1.1
 port: 3306
-password: sce
-username: sce
-db_name: sce_db
+password: <passowrd>
+username: <username>
+db_name: <dbname>
 
 [TABLE]
-connections: connections
-
-[SERVICE]
-
-
-[SERVER]
-weburl: http://192.168.1.xxx:1xxxx/static/netgraph/imgs/{}.svg
+processes_table: processes
+hosts_table: hosts
