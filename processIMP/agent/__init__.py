@@ -314,13 +314,13 @@ def insert2db_processes(table, p_name, p_ppid, p_pid, p_status, p_cwd, p_exe, p_
 
 
 @db_commit
-def reset_local_db_info(table_name, column_name):
+def reset_local_db_info(table_name, column_name, value_str):
     """
     在每台服务器执行全收集的时候，先清除旧的数据库信息;
     """
-    server_uuid = get_server_uuid()
-    pLogger.debug("Clean record base column [{1}] on table [{0}].".format(
-        table_name, column_name))
+    server_uuid =value_str
+    pLogger.debug("Clean record base column [{1}] on table [{0} with value_str is {2}].".format(
+        table_name, column_name, value_str))
     sql_like_string = "%s = '{0}'" % column_name
     pLogger.debug("sql_like_string: {}".format(sql_like_string))
     sql_like_pattern = sql_like_string.format(server_uuid)
@@ -339,11 +339,12 @@ def do_collect():
         hosts_table = python_config_parser.get("TABLE", "hosts_table")
         processes_table = python_config_parser.get("TABLE", "processes_table")
         # Clean old data
-        for table in (hosts_table, processes_table):
-            reset_local_db_info(table, 'server_uuid')
+        server_uuid = get_server_uuid()
+        # 由于外键的存在，必须先清除processes表，再清除hosts表
+        for table in (processes_table, hosts_table):
+            reset_local_db_info(table, 'server_uuid', server_uuid)
         # Collect new data
         # hosts
-        server_uuid = get_server_uuid()
         host_ip_addresses = get_host_ip()
         insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses)
         processes(processes_table, server_uuid=server_uuid)

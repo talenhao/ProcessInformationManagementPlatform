@@ -88,7 +88,7 @@ class DbInitConnect(object):
         self.connect.close()
 
     def show_databases(self):
-        sql_cmd = 'show create database yed_collect'
+        sql_cmd = 'show create database'
         try:
             self.ssdictcursor.execute(sql_cmd)
         except:
