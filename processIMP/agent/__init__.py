@@ -13,8 +13,8 @@ import sys
 import uuid
 import getopt
 import psutil
-import socket
 import datetime
+import subprocess
 
 # user module
 from processIMP import model
@@ -123,6 +123,18 @@ def get_server_uuid():
     server_uuid = str(uuid.UUID(int=uuid.getnode()))
     pLogger.info("server_uuid is: %s", server_uuid)
     return server_uuid
+
+
+def get_server_serial_number():
+    """
+    Get system information dispatch command 'dmidecode'
+    :return:
+    """
+    cmdline = 'dmidecode -t 1'
+    cmd_output = subprocess.getoutput(cmdline)
+    re_compile = re.compile('Serial Number:.*')
+    serial_number = re_compile.search(str(cmd_output)).group(0).split(':')[1].strip()
+    return serial_number
 
 
 def get_host_ip():
@@ -244,18 +256,18 @@ def process_before_insert_db(string):
 
 
 @db_commit
-def insert2db_hosts(table, server_uuid=None, ip_addresses=None):
+def insert2db_hosts(table, server_uuid=None, ip_addresses=None, serial_number=None):
     """
     hosts表数据插入sql语句生成.
     :param table:
     :param server_uuid:
     :param ip_addresses:
-    :param kwargs:
+    :param serial_number:
     :return:
     """
     if server_uuid and ip_addresses:
-        columns_list = ["server_uuid", "ip_addresses"]
-        values_list = [server_uuid, ip_addresses]
+        columns_list = ["server_uuid", "ip_addresses", "serial_number"]
+        values_list = [server_uuid, ip_addresses, serial_number]
         columns_str = ','.join(['{1' + str([field]) + '}' for field in range(len(columns_list))])
         values_str = ','.join(['"{2' + str([field]) + '}"' for field in range(len(values_list))])
         pLogger.debug("columns_str is : {!r}, values_str is : {!r} .".format(
