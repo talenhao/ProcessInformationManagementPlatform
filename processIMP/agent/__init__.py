@@ -132,6 +132,7 @@ def get_server_serial_number():
     """
     cmdline = 'dmidecode -t 1'
     cmd_output = subprocess.getoutput(cmdline)
+    pLogger.debug("cmd_output is {}".format(cmd_output))
     re_compile = re.compile('Serial Number:.*')
     serial_number = re_compile.search(str(cmd_output)).group(0).split(':')[1].strip()
     return serial_number
@@ -358,7 +359,8 @@ def do_collect():
         # Collect new data
         # hosts
         host_ip_addresses = get_host_ip()
-        insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses)
+        serial_number = get_server_serial_number()
+        insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses, serial_number=serial_number)
         processes(processes_table, server_uuid=server_uuid)
     except PermissionError:
         pLogger.exception("Use root user.")
