@@ -13,8 +13,8 @@ import sys
 import uuid
 import getopt
 import psutil
-import socket
 import datetime
+import subprocess
 
 # user module
 from processIMP import model
@@ -123,6 +123,19 @@ def get_server_uuid():
     server_uuid = str(uuid.UUID(int=uuid.getnode()))
     pLogger.info("server_uuid is: %s", server_uuid)
     return server_uuid
+
+
+def get_server_serial_number():
+    """
+    Get system information dispatch command 'dmidecode'
+    :return:
+    """
+    cmdline = 'dmidecode -t 1'
+    cmd_output = subprocess.getoutput(cmdline)
+    pLogger.debug("cmd_output is {}".format(cmd_output))
+    re_compile = re.compile('Serial Number:.*')
+    serial_number = re_compile.search(str(cmd_output)).group(0).split(':')[1].strip()
+    return serial_number
 
 
 def get_host_ip():
@@ -262,12 +275,17 @@ def get_mem_info():
 
 
 @db_commit
+<<<<<<< HEAD
 def insert2db_hosts(table, server_uuid=None, ip_addresses=None, cpu_info_dict=None, mem_info_dict=None):
+=======
+def insert2db_hosts(table, server_uuid=None, ip_addresses=None, serial_number=None):
+>>>>>>> 7710b1aa19359c99e2ca7ee158c74ddf8e43e1d5
     """
     hosts表数据插入sql语句生成.
     :param table:
     :param server_uuid:
     :param ip_addresses:
+<<<<<<< HEAD
     :param cpu_info_dict:
     :param mem_info_dict:
     :return:
@@ -287,6 +305,14 @@ def insert2db_hosts(table, server_uuid=None, ip_addresses=None, cpu_info_dict=No
             values_list = [server_uuid,
                            ip_addresses
                            ]
+=======
+    :param serial_number:
+    :return:
+    """
+    if server_uuid and ip_addresses:
+        columns_list = ["server_uuid", "ip_addresses", "serial_number"]
+        values_list = [server_uuid, ip_addresses, serial_number]
+>>>>>>> 7710b1aa19359c99e2ca7ee158c74ddf8e43e1d5
         columns_str = ','.join(['{1' + str([field]) + '}' for field in range(len(columns_list))])
         values_str = ','.join(['"{2' + str([field]) + '}"' for field in range(len(values_list))])
         pLogger.debug("columns_str is : {!r}, values_str is : {!r} .".format(
@@ -377,10 +403,15 @@ def do_collect():
         # Collect new data
         # hosts
         host_ip_addresses = get_host_ip()
+<<<<<<< HEAD
         cpu_info = get_cpu_info()
         mem_info = get_mem_info()
         insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses,
                         cpu_info_dict=cpu_info, mem_info_dict=mem_info)
+=======
+        serial_number = get_server_serial_number()
+        insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses, serial_number=serial_number)
+>>>>>>> 7710b1aa19359c99e2ca7ee158c74ddf8e43e1d5
         processes(processes_table, server_uuid=server_uuid)
     except PermissionError:
         pLogger.exception("Use root user.")
