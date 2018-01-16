@@ -22,11 +22,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-<<<<<<< HEAD
-    version='2018.1.16.14',
-=======
-    version='2017.12.25.12',
->>>>>>> 7710b1aa19359c99e2ca7ee158c74ddf8e43e1d5
+    version='2018.1.16.15',
 
     description='ProcessInformationManagementPlatform,简称PIMP.用于展示服务器上所有进程的细化状态信息.',
     long_description=long_description,

@@ -275,44 +275,41 @@ def get_mem_info():
 
 
 @db_commit
-<<<<<<< HEAD
-def insert2db_hosts(table, server_uuid=None, ip_addresses=None, cpu_info_dict=None, mem_info_dict=None):
-=======
-def insert2db_hosts(table, server_uuid=None, ip_addresses=None, serial_number=None):
->>>>>>> 7710b1aa19359c99e2ca7ee158c74ddf8e43e1d5
+def insert2db_hosts(table, server_uuid=None, ip_addresses=None,
+                    serial_number=None, cpu_info_dict=None, mem_info_dict=None):
     """
     hosts表数据插入sql语句生成.
     :param table:
     :param server_uuid:
     :param ip_addresses:
-<<<<<<< HEAD
     :param cpu_info_dict:
     :param mem_info_dict:
+    :param serial_number:
     :return:
     """
     if server_uuid and ip_addresses:
         if cpu_info_dict and mem_info_dict:
-            columns_list = ["server_uuid", "ip_addresses", "cpu_count", "cpu_freq", "virtual_memory", "swap_memory"]
+            columns_list = ["server_uuid",
+                            "ip_addresses",
+                            "serial_number",
+                            "cpu_count",
+                            "cpu_freq",
+                            "virtual_memory",
+                            "swap_memory"]
             values_list = [server_uuid,
                            ip_addresses,
+                           serial_number,
                            cpu_info_dict["cpu_count"],
                            cpu_info_dict["cpu_freq"],
                            mem_info_dict["virtual_memory"],
                            mem_info_dict["swap_memory"]
                            ]
         else:
-            columns_list = ["server_uuid", "ip_addresses"]
+            columns_list = ["server_uuid", "ip_addresses", "serial_number"]
             values_list = [server_uuid,
-                           ip_addresses
+                           ip_addresses,
+                           serial_number
                            ]
-=======
-    :param serial_number:
-    :return:
-    """
-    if server_uuid and ip_addresses:
-        columns_list = ["server_uuid", "ip_addresses", "serial_number"]
-        values_list = [server_uuid, ip_addresses, serial_number]
->>>>>>> 7710b1aa19359c99e2ca7ee158c74ddf8e43e1d5
         columns_str = ','.join(['{1' + str([field]) + '}' for field in range(len(columns_list))])
         values_str = ','.join(['"{2' + str([field]) + '}"' for field in range(len(values_list))])
         pLogger.debug("columns_str is : {!r}, values_str is : {!r} .".format(
@@ -403,15 +400,12 @@ def do_collect():
         # Collect new data
         # hosts
         host_ip_addresses = get_host_ip()
-<<<<<<< HEAD
+        serial_number = get_server_serial_number()
         cpu_info = get_cpu_info()
         mem_info = get_mem_info()
         insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses,
+                        serial_number=serial_number,
                         cpu_info_dict=cpu_info, mem_info_dict=mem_info)
-=======
-        serial_number = get_server_serial_number()
-        insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses, serial_number=serial_number)
->>>>>>> 7710b1aa19359c99e2ca7ee158c74ddf8e43e1d5
         processes(processes_table, server_uuid=server_uuid)
     except PermissionError:
         pLogger.exception("Use root user.")
