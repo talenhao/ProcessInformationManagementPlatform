@@ -243,19 +243,50 @@ def process_before_insert_db(string):
         exit()
 
 
+def get_cpu_info():
+    """
+    Get CPU info
+    :return:
+    """
+    cpu_count = psutil.cpu_count()
+    cpu_freq = psutil.cpu_freq()
+    return {"cpu_count": cpu_count,
+            "cpu_freq": cpu_freq}
+
+
+def get_mem_info():
+    mem = psutil.virtual_memory()
+    swap = psutil.swap_memory()
+    return {"virtual_memory": mem,
+            "swap_memory": swap}
+
+
 @db_commit
-def insert2db_hosts(table, server_uuid=None, ip_addresses=None):
+def insert2db_hosts(table, server_uuid=None, ip_addresses=None, cpu_info_dict=None, mem_info_dict=None):
     """
     hosts表数据插入sql语句生成.
     :param table:
     :param server_uuid:
     :param ip_addresses:
-    :param kwargs:
+    :param cpu_info_dict:
+    :param mem_info_dict:
     :return:
     """
     if server_uuid and ip_addresses:
-        columns_list = ["server_uuid", "ip_addresses"]
-        values_list = [server_uuid, ip_addresses]
+        if cpu_info_dict and mem_info_dict:
+            columns_list = ["server_uuid", "ip_addresses", "cpu_count", "cpu_freq", "virtual_memory", "swap_memory"]
+            values_list = [server_uuid,
+                           ip_addresses,
+                           cpu_info_dict["cpu_count"],
+                           cpu_info_dict["cpu_freq"],
+                           mem_info_dict["virtual_memory"],
+                           mem_info_dict["swap_memory"]
+                           ]
+        else:
+            columns_list = ["server_uuid", "ip_addresses"]
+            values_list = [server_uuid,
+                           ip_addresses
+                           ]
         columns_str = ','.join(['{1' + str([field]) + '}' for field in range(len(columns_list))])
         values_str = ','.join(['"{2' + str([field]) + '}"' for field in range(len(values_list))])
         pLogger.debug("columns_str is : {!r}, values_str is : {!r} .".format(
@@ -346,7 +377,10 @@ def do_collect():
         # Collect new data
         # hosts
         host_ip_addresses = get_host_ip()
-        insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses)
+        cpu_info = get_cpu_info()
+        mem_info = get_mem_info()
+        insert2db_hosts(hosts_table, server_uuid=server_uuid, ip_addresses=host_ip_addresses,
+                        cpu_info_dict=cpu_info, mem_info_dict=mem_info)
         processes(processes_table, server_uuid=server_uuid)
     except PermissionError:
         pLogger.exception("Use root user.")
