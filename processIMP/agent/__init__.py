@@ -385,6 +385,42 @@ def reset_local_db_info(table_name, column_name, value_str):
     return sql_cmd
 
 
+@db_commit
+def remark_old_items(table_name, column_name, value_str):
+    """
+    在每台服务器执行全收集的时候，先标记旧的数据信息;
+    """
+    server_uuid =value_str
+    pLogger.debug("remark record base column [{1}] on table [{0} with value_str is {2}].".format(
+        table_name, column_name, value_str))
+    sql_like_string = "%s = '{0}'" % column_name
+    pLogger.debug("sql_like_string: {}".format(sql_like_string))
+    sql_like_pattern = sql_like_string.format(server_uuid)
+    pLogger.debug("sql_like_pattern: {}".format(sql_like_pattern))
+    sql_update_cmd = "UPDATE %s SET old=TRUE WHERE %s" % (table_name, sql_like_pattern)
+    pLogger.debug("{} Remark database table operation: {}".format(
+        table_name, sql_update_cmd))
+    return sql_update_cmd
+
+
+@db_commit
+def delete_old_items(table_name, column_name, value_str):
+    """
+    在每台服务器执行全收集的时候，先清除旧的数据信息;
+    """
+    server_uuid =value_str
+    pLogger.debug("remark record base column [{1}] on table [{0} with value_str is {2}].".format(
+        table_name, column_name, value_str))
+    sql_like_string = "%s = '{0}'" % column_name
+    pLogger.debug("sql_like_string: {}".format(sql_like_string))
+    sql_like_pattern = sql_like_string.format(server_uuid)
+    pLogger.debug("sql_like_pattern: {}".format(sql_like_pattern))
+    sql_delete_cmd = "DELETE FROM %s WHERE %s AND CreateTime < DATE_SUB(NOW(), INTERVAL 1 MONTH)" % (table_name, sql_like_pattern)
+    pLogger.debug("{} truncate database table operation: {}".format(
+        table_name, sql_delete_cmd))
+    return sql_delete_cmd
+
+
 @spend_time
 @start_end_point(SCRIPT_NAME)
 @script_head
@@ -395,10 +431,12 @@ def do_collect():
         # Clean old data
         server_uuid = get_server_uuid()
         # 由于外键的存在，必须先清除processes表，再清除hosts表
-        for table in (processes_table, hosts_table):
-            reset_local_db_info(table, 'server_uuid', server_uuid)
+        # for table in (processes_table, hosts_table):
+        #     reset_local_db_info(table, 'server_uuid', server_uuid)
         # Collect new data
         # hosts
+        remark_old_items(processes_table, 'server_uuid', server_uuid)
+        delete_old_items(processes_table, 'server_uuid', server_uuid)
         host_ip_addresses = get_host_ip()
         serial_number = get_server_serial_number()
         cpu_info = get_cpu_info()
