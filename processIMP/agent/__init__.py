@@ -397,7 +397,7 @@ def remark_old_items(table_name, column_name, value_str):
     pLogger.debug("sql_like_string: {}".format(sql_like_string))
     sql_like_pattern = sql_like_string.format(server_uuid)
     pLogger.debug("sql_like_pattern: {}".format(sql_like_pattern))
-    sql_update_cmd = "UPDATE %s SET old=TRUE WHERE %s" % (table_name, sql_like_pattern)
+    sql_update_cmd = "UPDATE %s SET old=TRUE WHERE old=0 AND %s" % (table_name, sql_like_pattern)
     pLogger.debug("{} Remark database table operation: {}".format(
         table_name, sql_update_cmd))
     return sql_update_cmd
